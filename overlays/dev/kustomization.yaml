@@ -6,6 +6,6 @@ resources:
 # Thay REPLACE bằng tag thật (xem tab Packages trên GitHub hoặc log bước publish).
 images:
 - name: ghcr.io/cuongmotnang/bagisto-app
-  newTag: sha-7f040f0
+  newTag: sha-d77394a
 - name: ghcr.io/cuongmotnang/bagisto-web
-  newTag: sha-7f040f0
+  newTag: sha-d77394a
