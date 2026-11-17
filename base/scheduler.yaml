@@ -1,0 +1,34 @@
+# Scheduler: CHỈ MỘT bản (nhân bản thì tác vụ định kỳ chạy lặp).
+# strategy Recreate: lúc cập nhật tắt bản cũ rồi mới bật bản mới, không để hai bản chạy song song.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scheduler
+  labels: { app.kubernetes.io/name: scheduler, app.kubernetes.io/part-of: bagisto }
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels: { app.kubernetes.io/name: scheduler }
+  template:
+    metadata:
+      labels: { app.kubernetes.io/name: scheduler, app.kubernetes.io/part-of: bagisto }
+    spec:
+      # Tắt biến môi trường K8s tự chèn cho mỗi Service (REDIS_PORT=tcp://..., MYSQL_PORT=...).
+      # Chúng trùng tên với biến của Laravel và làm hỏng kết nối.
+      enableServiceLinks: false
+      securityContext:
+        fsGroup: 33
+      containers:
+        - name: scheduler
+          image: ghcr.io/cuongmotnang/bagisto-app    # tag đặt ở overlays/dev
+          args: ["php", "artisan", "schedule:work"]
+          envFrom:
+            - configMapRef: { name: bagisto-config }
+            - secretRef: { name: bagisto-app-secret }
+          securityContext:
+            allowPrivilegeEscalation: false
+          resources:
+            requests: { cpu: 50m, memory: 128Mi }
+            limits: { memory: 256Mi }

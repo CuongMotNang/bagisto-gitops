@@ -1,0 +1,82 @@
+# Web = một pod, hai container: php-fpm (image app) + nginx (image web).
+# nginx gọi php-fpm qua 127.0.0.1:9000 vì cùng pod (biến PHP_FPM_HOST).
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+  labels: { app.kubernetes.io/name: web, app.kubernetes.io/part-of: bagisto }
+spec:
+  selector: { app.kubernetes.io/name: web }
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  labels: { app.kubernetes.io/name: web, app.kubernetes.io/part-of: bagisto }
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app.kubernetes.io/name: web }
+  template:
+    metadata:
+      labels: { app.kubernetes.io/name: web, app.kubernetes.io/part-of: bagisto }
+    spec:
+      # Tắt biến môi trường K8s tự chèn cho mỗi Service (REDIS_PORT=tcp://..., MYSQL_PORT=...).
+      # Chúng trùng tên với biến của Laravel và làm hỏng kết nối.
+      enableServiceLinks: false
+      securityContext:
+        fsGroup: 33          # www-data, để ghi được vào volume uploads
+      containers:
+        - name: app
+          image: ghcr.io/cuongmotnang/bagisto-app    # tag đặt ở overlays/dev
+          envFrom:
+            - configMapRef: { name: bagisto-config }
+            - secretRef: { name: bagisto-app-secret }
+          ports:
+            - name: fpm
+              containerPort: 9000
+          volumeMounts:
+            - name: uploads
+              mountPath: /var/www/html/storage/app/public
+          securityContext:
+            allowPrivilegeEscalation: false
+          resources:
+            requests: { cpu: 100m, memory: 256Mi }
+            limits: { memory: 512Mi }
+          readinessProbe:
+            tcpSocket: { port: fpm }
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket: { port: fpm }
+            periodSeconds: 20
+            failureThreshold: 6
+        - name: nginx
+          image: ghcr.io/cuongmotnang/bagisto-web    # tag đặt ở overlays/dev
+          env:
+            - name: PHP_FPM_HOST
+              value: "127.0.0.1:9000"
+          ports:
+            - name: http
+              containerPort: 80
+          volumeMounts:
+            - name: uploads
+              mountPath: /var/www/html/storage/app/public
+              readOnly: true
+          resources:
+            requests: { cpu: 50m, memory: 64Mi }
+            limits: { memory: 128Mi }
+          readinessProbe:
+            tcpSocket: { port: http }
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket: { port: http }
+            periodSeconds: 20
+            failureThreshold: 6
+      volumes:
+        - name: uploads
+          persistentVolumeClaim:
+            claimName: uploads

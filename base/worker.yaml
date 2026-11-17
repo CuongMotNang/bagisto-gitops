@@ -1,0 +1,39 @@
+# Queue worker: cùng image app, đổi lệnh (args giữ nguyên entrypoint của image).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+  labels: { app.kubernetes.io/name: worker, app.kubernetes.io/part-of: bagisto }
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app.kubernetes.io/name: worker }
+  template:
+    metadata:
+      labels: { app.kubernetes.io/name: worker, app.kubernetes.io/part-of: bagisto }
+    spec:
+      # Tắt biến môi trường K8s tự chèn cho mỗi Service (REDIS_PORT=tcp://..., MYSQL_PORT=...).
+      # Chúng trùng tên với biến của Laravel và làm hỏng kết nối.
+      enableServiceLinks: false
+      terminationGracePeriodSeconds: 70   # lớn hơn --timeout để job đang chạy kịp xong
+      securityContext:
+        fsGroup: 33
+      containers:
+        - name: worker
+          image: ghcr.io/cuongmotnang/bagisto-app    # tag đặt ở overlays/dev
+          args: ["php", "artisan", "queue:work", "--tries=3", "--timeout=60", "--sleep=3"]
+          envFrom:
+            - configMapRef: { name: bagisto-config }
+            - secretRef: { name: bagisto-app-secret }
+          volumeMounts:
+            - name: uploads
+              mountPath: /var/www/html/storage/app/public
+          securityContext:
+            allowPrivilegeEscalation: false
+          resources:
+            requests: { cpu: 100m, memory: 256Mi }
+            limits: { memory: 512Mi }
+      volumes:
+        - name: uploads
+          persistentVolumeClaim:
+            claimName: uploads

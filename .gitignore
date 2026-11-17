@@ -1,0 +1,9 @@
+# Bí mật và thông tin xác thực: KHÔNG bao giờ commit
+.env
+.env.*
+*.secret.yaml
+*secret*.yaml
+*.key
+*.pem
+kubeconfig*
+.kube/

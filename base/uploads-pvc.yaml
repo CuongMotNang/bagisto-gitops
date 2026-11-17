@@ -1,0 +1,12 @@
+# Ảnh người dùng upload (storage/app/public). Web và worker dùng chung.
+# Minikube một node nên ReadWriteOnce đủ dùng; nhiều node thì cần RWX hoặc S3/MinIO.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: uploads
+  labels: { app.kubernetes.io/part-of: bagisto }
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 2Gi

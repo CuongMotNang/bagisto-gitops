@@ -1,66 +1,49 @@
+# Redis: session, cache, queue. Bản dev không lưu đĩa: pod chết thì mất dữ liệu trong Redis
+# (queue đang chờ cũng mất). Muốn bền thì thêm PVC và bật appendonly (làm sau).
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  labels: { app.kubernetes.io/name: redis, app.kubernetes.io/part-of: bagisto }
+spec:
+  selector: { app.kubernetes.io/name: redis }
+  ports:
+    - name: redis
+      port: 6379
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: redis
-  labels:
-    app.kubernetes.io/name: redis
-    app.kubernetes.io/part-of: bagisto
-
+  labels: { app.kubernetes.io/name: redis, app.kubernetes.io/part-of: bagisto }
 spec:
   replicas: 1
   selector:
-    matchLabels:
-      app.kubernetes.io/name: redis
-
+    matchLabels: { app.kubernetes.io/name: redis }
   template:
     metadata:
-      labels:
-        app.kubernetes.io/name: redis
-        app.kubernetes.io/part-of: bagisto
-
+      labels: { app.kubernetes.io/name: redis, app.kubernetes.io/part-of: bagisto }
     spec:
       containers:
         - name: redis
-          image: redis:7.0.11-alpine
-
-          args:
-            - redis-server
-            - --requirepass
-            - $(REDIS_PASSWORD)
-
+          image: redis:8.8.4-alpine
+          # Mật khẩu lấy từ Secret (cùng khoá REDIS_PASSWORD mà app đọc qua envFrom).
+          # sh -c + exec để $REDIS_PASSWORD được thay giá trị rồi redis-server thành PID 1.
+          command: ["sh", "-c", "exec redis-server --save '' --appendonly no --requirepass \"$REDIS_PASSWORD\""]
           env:
             - name: REDIS_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: bagisto-secrets
-                  key: REDIS_PASSWORD
-
+              valueFrom: { secretKeyRef: { name: bagisto-app-secret, key: REDIS_PASSWORD } }
+            - name: REDISCLI_AUTH      # redis-cli tự dùng biến này để xác thực (probe)
+              valueFrom: { secretKeyRef: { name: bagisto-app-secret, key: REDIS_PASSWORD } }
           ports:
             - name: redis
               containerPort: 6379
-
           resources:
-            requests:
-              cpu: 100m
-              memory: 256Mi
-            limits:
-              cpu: 500m
-              memory: 512Mi
-
+            requests: { cpu: 50m, memory: 64Mi }
+            limits: { memory: 256Mi }
           readinessProbe:
-            exec:
-              command:
-                - sh
-                - -c
-                - redis-cli -a "$REDIS_PASSWORD" ping
-            periodSeconds: 5
-            timeoutSeconds: 5
-
+            exec: { command: ["redis-cli", "ping"] }
+            periodSeconds: 10
           livenessProbe:
-            exec:
-              command:
-                - sh
-                - -c
-                - redis-cli -a "$REDIS_PASSWORD" ping
-            periodSeconds: 5
-            timeoutSeconds: 5
+            exec: { command: ["redis-cli", "ping"] }
+            periodSeconds: 20

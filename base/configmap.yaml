@@ -1,0 +1,22 @@
+# Cấu hình KHÔNG nhạy cảm, dùng chung cho web, worker, scheduler.
+# Biến môi trường thật thắng file .env mà entrypoint chép từ .env.example
+# (.env.example có APP_ENV=local, APP_DEBUG=true nên phải đặt lại ở đây).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bagisto-config
+  labels: { app.kubernetes.io/part-of: bagisto }
+data:
+  APP_ENV: "production"
+  APP_DEBUG: "false"
+  APP_URL: "http://localhost:8080"   # khớp lệnh port-forward trong README
+  DB_CONNECTION: "mysql"
+  DB_HOST: "mysql"
+  DB_PORT: "3306"
+  REDIS_CLIENT: "predis"             # dự án có predis, không cần extension redis
+  REDIS_HOST: "redis"
+  REDIS_PORT: "6379"                 # phải đặt rõ: K8s tự chèn REDIS_PORT=tcp://<ip>:6379 (service link)
+  SESSION_DRIVER: "redis"
+  CACHE_STORE: "redis"
+  QUEUE_CONNECTION: "redis"
+  LOG_CHANNEL: "stderr"              # log ra stderr để kubectl logs / Loki đọc được

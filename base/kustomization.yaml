@@ -5,3 +5,8 @@ resources:
   - namespace.yaml
   - mysql.yaml
   - redis.yaml
+  - configmap.yaml
+  - uploads-pvc.yaml
+  - web.yaml
+  - worker.yaml
+  - scheduler.yaml
