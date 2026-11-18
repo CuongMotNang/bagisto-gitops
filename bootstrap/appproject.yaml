@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: bagisto
+  namespace: argocd
+spec:
+  description: Bagisto deployment managed from the bagisto-gitops repository
+  sourceRepos:
+    - https://github.com/CuongMotNang/bagisto-gitops
+  destinations:
+    - namespace: bagisto
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+  namespaceResourceWhitelist:
+    - group: ""
+      kind: ConfigMap
+    - group: ""
+      kind: Service
+    - group: ""
+      kind: PersistentVolumeClaim
+    - group: apps
+      kind: Deployment
+    - group: apps
+      kind: StatefulSet
+    - group: batch
+      kind: Job
+  orphanedResources:
+    warn: true
