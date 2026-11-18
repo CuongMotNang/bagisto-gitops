@@ -5,30 +5,32 @@
 
 ## Bối cảnh
 
-Repo GitOps hiện có `base/` và `overlays/dev/` ở thư mục gốc, vừa bổ sung `bootstrap/` cho AppProject và Application. Bot cập nhật image trong repo source đang commit và push trực tiếp vào `master`. Nhãn workload chưa thống nhất đầy đủ, chưa có quy định branch protection, và các thay đổi cluster có thể bị sửa tay ngoài Git.
+Repo GitOps hiện có `base/` và `overlays/dev/` ở thư mục gốc, `bootstrap/` cho AppProject và Application, và `platform/vault/` cho cấu hình Vault. Bot cập nhật image trong repo source đang commit và push trực tiếp vào `master`. Nhãn workload chưa thống nhất đầy đủ, chưa có quy định branch protection, và các thay đổi cluster có thể bị sửa tay ngoài Git.
 
-Các quyết định dưới đây chốt hướng đi cho Giai đoạn 0. PR này chỉ ghi tài liệu; chưa di chuyển thư mục, chưa đổi manifest và chưa đổi cấu hình GitHub.
+Các quyết định dưới đây chốt hướng đi cho Giai đoạn 0.
 
 ## Quyết định
 
-### 1. Bố cục repo đích
+### 1. Bố cục repo
 
-Bố cục đích:
+Bố cục hiện tại:
 
 ```text
-apps/bagisto/{base,overlays/dev}
+base/
+overlays/dev/
+platform/vault/
 bootstrap/
 docs/
-scripts/
 .github/
 ```
 
+- `base/` và `overlays/dev/` giữ nguyên ở gốc repo; Bagisto vẫn render từ `overlays/dev`.
+- `platform/vault/` chứa values cho Vault; Vault có AppProject/Application riêng.
 - `bootstrap/` chứa AppProject và Application, nằm ngoài path Application theo dõi.
-- `docs/` chứa kiến trúc và ADR.
-- `scripts/` dành cho script vận hành có thể kiểm chứng và tái sử dụng.
-- `.github/` chứa CODEOWNERS, PR template và workflow.
+- `docs/` chứa kiến trúc, ADR và runbook.
+- `.github/` chứa CODEOWNERS, PR template, schema và workflow.
 
-Hiện trạng chưa di chuyển: `base/` và `overlays/dev/` vẫn ở gốc repo. Việc chuyển sang `apps/bagisto/` phải cập nhật `bootstrap/application.yaml`, biến `GITOPS_OVERLAY_DIR` của bot và tài liệu liên quan.
+Không chuyển sang `apps/bagisto/`. Việc giữ `base/` và `overlays/dev/` ở gốc tránh phải đổi `bootstrap/application.yaml`, biến `GITOPS_OVERLAY_DIR` của bot và CI.
 
 ### 2. Nhãn chuẩn
 
@@ -76,7 +78,8 @@ Mọi thay đổi cấu hình cluster phải có commit trong GitOps repo. Khôn
 
 ## Hệ quả
 
-- Việc chuyển bố cục sang `apps/bagisto/` cần một PR riêng và phải cập nhật đồng bộ Application path, `GITOPS_OVERLAY_DIR`, CI và tài liệu.
+- Không có PR chuyển bố cục sang `apps/bagisto/`; `base/` và `overlays/dev/` là đường dẫn chính thức.
+- Vault nằm ngoài `overlays/dev`, nên thay đổi Vault không làm đổi render hash của Bagisto.
 - Bước gắn nhãn pod template sẽ gây rollout; `includeSelectors: false` tránh đổi selector nhưng không tránh rollout.
 - Bot mở PR cần `GITOPS_TOKEN` có quyền tạo PR và cần branch protection được cấu hình đúng; nếu thiếu, bot sẽ không merge được.
 - CI báo cáo trước chưa chặn merge; chỉ có hiệu lực chặn khi chuyển sang PR F.
