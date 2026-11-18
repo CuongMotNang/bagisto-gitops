@@ -10,3 +10,4 @@ resources:
   - web.yaml
   - worker.yaml
   - scheduler.yaml
+  - migration-job.yaml

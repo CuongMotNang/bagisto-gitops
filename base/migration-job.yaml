@@ -1,0 +1,50 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: bagisto-migrate
+  labels:
+    app.kubernetes.io/name: migrate
+    app.kubernetes.io/component: migration
+    app.kubernetes.io/part-of: bagisto
+  annotations:
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation,HookSucceeded
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 1800
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: migrate
+        app.kubernetes.io/component: migration
+        app.kubernetes.io/part-of: bagisto
+    spec:
+      enableServiceLinks: false
+      automountServiceAccountToken: false
+      restartPolicy: Never
+      securityContext:
+        fsGroup: 33
+      containers:
+        - name: migrate
+          image: ghcr.io/cuongmotnang/bagisto-app
+          command: ["php", "artisan", "migrate", "--force", "--no-interaction"]
+          envFrom:
+            - configMapRef:
+                name: bagisto-config
+            - secretRef:
+                name: bagisto-app-secret
+          volumeMounts:
+            - name: uploads
+              mountPath: /var/www/html/storage/app/public
+          securityContext:
+            allowPrivilegeEscalation: false
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 512Mi
+      volumes:
+        - name: uploads
+          persistentVolumeClaim:
+            claimName: uploads
