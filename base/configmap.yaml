@@ -1,4 +1,9 @@
-# Cấu hình KHÔNG nhạy cảm, dùng chung cho web, worker, scheduler.
+# Mục đích: Cấu hình không nhạy cảm dùng chung cho web, worker, scheduler và Job bagisto-migrate.
+# Phụ thuộc: Không có; được dùng bởi web, worker, scheduler và Job bagisto-migrate.
+# Sync-wave/hook: Không có.
+# Owner: cuongmotnang
+# Tham chiếu: docs/architecture.md
+# Cấu hình KHÔNG nhạy cảm, dùng chung cho web, worker, scheduler và Job bagisto-migrate.
 # Biến môi trường thật thắng file .env mà entrypoint chép từ .env.example
 # (.env.example có APP_ENV=local, APP_DEBUG=true nên phải đặt lại ở đây).
 apiVersion: v1

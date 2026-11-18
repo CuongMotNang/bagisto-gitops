@@ -1,3 +1,8 @@
+# Mục đích: Application Argo CD bagisto quản lý overlay dev từ GitOps repository.
+# Phụ thuộc: AppProject bagisto và namespace argocd của Argo CD.
+# Sync-wave/hook: Không có.
+# Owner: cuongmotnang
+# Tham chiếu: docs/architecture.md
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:

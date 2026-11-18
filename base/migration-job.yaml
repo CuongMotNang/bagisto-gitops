@@ -1,3 +1,8 @@
+# Mục đích: Job bagisto-migrate chạy migration trước khi Argo CD sync workload.
+# Phụ thuộc: ConfigMap bagisto-config; Secret bagisto-app-secret; PVC uploads; Service mysql.
+# Sync-wave/hook: Hook PreSync; delete policy BeforeHookCreation,HookSucceeded; không có sync-wave.
+# Owner: cuongmotnang
+# Tham chiếu: docs/architecture.md
 apiVersion: batch/v1
 kind: Job
 metadata:

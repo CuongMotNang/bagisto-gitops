@@ -1,3 +1,8 @@
+# Mục đích: Deployment scheduler chạy tác vụ định kỳ của Laravel.
+# Phụ thuộc: ConfigMap bagisto-config; Secret bagisto-app-secret; Service mysql và redis.
+# Sync-wave/hook: Không có.
+# Owner: cuongmotnang
+# Tham chiếu: docs/architecture.md
 # Scheduler: CHỈ MỘT bản (nhân bản thì tác vụ định kỳ chạy lặp).
 # strategy Recreate: lúc cập nhật tắt bản cũ rồi mới bật bản mới, không để hai bản chạy song song.
 apiVersion: apps/v1

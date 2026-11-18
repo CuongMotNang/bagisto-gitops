@@ -1,3 +1,8 @@
+# Mục đích: Kustomization base gom toàn bộ resource Bagisto và đặt namespace bagisto.
+# Phụ thuộc: Không có.
+# Sync-wave/hook: Không có.
+# Owner: cuongmotnang
+# Tham chiếu: docs/architecture.md
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: bagisto

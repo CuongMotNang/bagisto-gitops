@@ -1,3 +1,8 @@
+# Mục đích: AppProject bagisto giới hạn source, destination và loại resource được sync.
+# Phụ thuộc: Không có; được dùng bởi Application bagisto.
+# Sync-wave/hook: Không có.
+# Owner: cuongmotnang
+# Tham chiếu: docs/architecture.md
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
