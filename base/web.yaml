@@ -1,3 +1,8 @@
+# Mục đích: Deployment web gồm php-fpm và nginx, kèm Service web.
+# Phụ thuộc: ConfigMap bagisto-config; Secret bagisto-app-secret; PVC uploads; Service mysql và redis.
+# Sync-wave/hook: Không có.
+# Owner: cuongmotnang
+# Tham chiếu: docs/architecture.md
 # Web = một pod, hai container: php-fpm (image app) + nginx (image web).
 # nginx gọi php-fpm qua 127.0.0.1:9000 vì cùng pod (biến PHP_FPM_HOST).
 apiVersion: v1

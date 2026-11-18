@@ -1,4 +1,9 @@
-# Ảnh người dùng upload (storage/app/public). Web và worker dùng chung.
+# Mục đích: PVC uploads lưu ảnh người dùng tại storage/app/public.
+# Phụ thuộc: StorageClass mặc định của cluster để cấp 2Gi; web, worker và Job bagisto-migrate dùng chung.
+# Sync-wave/hook: Không có.
+# Owner: cuongmotnang
+# Tham chiếu: docs/architecture.md
+# Ảnh người dùng upload (storage/app/public). Web, worker và Job bagisto-migrate dùng chung.
 # Minikube một node nên ReadWriteOnce đủ dùng; nhiều node thì cần RWX hoặc S3/MinIO.
 apiVersion: v1
 kind: PersistentVolumeClaim

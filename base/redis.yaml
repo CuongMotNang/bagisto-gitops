@@ -1,3 +1,8 @@
+# Mục đích: Deployment Redis và Service redis cho session, cache, queue.
+# Phụ thuộc: Secret bagisto-app-secret.
+# Sync-wave/hook: Không có.
+# Owner: cuongmotnang
+# Tham chiếu: docs/architecture.md
 # Redis: session, cache, queue. Bản dev không lưu đĩa: pod chết thì mất dữ liệu trong Redis
 # (queue đang chờ cũng mất). Muốn bền thì thêm PVC và bật appendonly (làm sau).
 apiVersion: v1

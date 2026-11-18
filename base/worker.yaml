@@ -1,3 +1,8 @@
+# Mục đích: Deployment worker xử lý queue Laravel.
+# Phụ thuộc: ConfigMap bagisto-config; Secret bagisto-app-secret; PVC uploads; Service mysql và redis.
+# Sync-wave/hook: Không có.
+# Owner: cuongmotnang
+# Tham chiếu: docs/architecture.md
 # Queue worker: cùng image app, đổi lệnh (args giữ nguyên entrypoint của image).
 apiVersion: apps/v1
 kind: Deployment
