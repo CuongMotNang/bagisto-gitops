@@ -1,0 +1,34 @@
+# Mục đích: AppProject platform quản lý Vault trong namespace vault.
+# Phụ thuộc: Argo CD namespace argocd; GitOps repo; Helm repo hashicorp.
+# Sync-wave/hook: Không có.
+# Owner: cuongmotnang
+# Tham chiếu: docs/architecture.md, docs/runbooks/vault-unseal.md
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: platform
+  namespace: argocd
+spec:
+  description: Platform services managed from the bagisto-gitops repository
+  sourceRepos:
+    - https://github.com/CuongMotNang/bagisto-gitops
+    - https://helm.releases.hashicorp.com
+  destinations:
+    - namespace: vault
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRoleBinding
+  namespaceResourceWhitelist:
+    - group: ""
+      kind: ConfigMap
+    - group: ""
+      kind: Service
+    - group: ""
+      kind: ServiceAccount
+    - group: apps
+      kind: StatefulSet
+  orphanedResources:
+    warn: true

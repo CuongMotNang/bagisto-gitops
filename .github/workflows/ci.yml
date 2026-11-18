@@ -60,7 +60,7 @@ jobs:
         run: |
           set -euo pipefail
           yamllint --version
-          yamllint -c .yamllint base overlays bootstrap .github
+          yamllint -c .yamllint base overlays bootstrap platform .github
 
   # CHẶN: manifest phải dựng được và không chứa Secret/tag latest/REPLACE.
   kustomize-build:

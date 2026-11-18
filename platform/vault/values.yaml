@@ -1,0 +1,90 @@
+# Mục đích: Values cho Vault standalone 1 replica, Raft + PVC, dùng cho Minikube dev.
+# Phụ thuộc: Chart hashicorp/vault 0.34.1; StorageClass standard; namespace vault.
+# Sync-wave/hook: Không có.
+# Owner: cuongmotnang
+# Tham chiếu: docs/architecture.md, docs/runbooks/vault-unseal.md
+global:
+  # Chấp nhận cho Minikube dev: không bật TLS, traffic chỉ trong cluster.
+  # Không dùng cấu hình này cho môi trường có traffic bên ngoài cluster.
+  tlsDisable: true
+
+injector:
+  # Tắt injector để giảm tài nguyên và không tạo webhook/caBundle cần quản lý.
+  enabled: false
+
+csi:
+  enabled: false
+
+ui:
+  # Tắt UI; chỉ dùng API qua Service ClusterIP.
+  enabled: false
+
+server:
+  image:
+    repository: hashicorp/vault
+    tag: "2.0.4"
+    pullPolicy: IfNotPresent
+
+  dev:
+    enabled: false
+
+  standalone:
+    enabled: true
+    config: |
+      ui = false
+
+      listener "tcp" {
+        tls_disable = 1
+        address = "[::]:8200"
+        cluster_address = "[::]:8201"
+      }
+
+      storage "raft" {
+        path = "/vault/data"
+      }
+
+  ha:
+    enabled: false
+    # Chart mặc định đặt VAULT_CLUSTER_ADDR là https; listener nội bộ đang tắt TLS.
+    # Giữ đúng scheme http để Raft dùng đúng cổng 8201.
+    clusterAddr: "http://$(HOSTNAME).vault-internal:8201"
+
+  service:
+    type: ClusterIP
+
+  dataStorage:
+    enabled: true
+    size: 1Gi
+    storageClass: standard
+    accessMode: ReadWriteOnce
+
+  auditStorage:
+    enabled: false
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  authDelegator:
+    # Giữ mặc định để có thể dùng Vault Kubernetes auth sau này.
+    enabled: true
+
+  readinessProbe:
+    enabled: true
+    # Vault trả 204 cho sealed/uninitialized khi truyền tham số này.
+    # Nhờ vậy Pod vẫn Ready sau khi cluster khởi động lại nhưng Vault còn sealed;
+    # tránh Application báo Degraded vô thời hạn. Unseal vẫn phải làm tay.
+    path: "/v1/sys/health?standbyok=true&sealedcode=204&uninitcode=204"
+    port: 8200
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    failureThreshold: 2
+    successThreshold: 1
+    timeoutSeconds: 3
+
+  livenessProbe:
+    enabled: false

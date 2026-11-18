@@ -1,0 +1,36 @@
+# Mục đích: Application Argo CD vault cài Vault chart ghim, dùng values trong repo.
+# Phụ thuộc: AppProject platform; chart hashicorp/vault 0.34.1; platform/vault/values.yaml.
+# Sync-wave/hook: Không có.
+# Owner: cuongmotnang
+# Tham chiếu: docs/architecture.md, docs/runbooks/vault-unseal.md
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vault
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: platform
+  sources:
+    - repoURL: https://github.com/CuongMotNang/bagisto-gitops
+      targetRevision: master
+      ref: values
+    - repoURL: https://helm.releases.hashicorp.com
+      chart: vault
+      targetRevision: 0.34.1
+      helm:
+        skipTests: true
+        valueFiles:
+          - $values/platform/vault/values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: vault
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: true
+    retry:
+      limit: 0
+    syncOptions:
+      - CreateNamespace=true
