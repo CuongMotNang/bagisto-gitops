@@ -1,4 +1,4 @@
-# Mục đích: SecretStore và 2 ExternalSecret tạm đọc secret Bagisto từ Vault.
+# Mục đích: SecretStore và 2 ExternalSecret đồng bộ secret Bagisto từ Vault.
 # Phụ thuộc: Vault Kubernetes auth role bagisto, ServiceAccount eso-bagisto.
 # Sync-wave/hook: Không có.
 # Owner: cuongmotnang
@@ -21,7 +21,7 @@ spec:
           serviceAccountRef:
             name: eso-bagisto
 ---
-# Mục đích: Đồng bộ secret app từ Vault ra secret tạm bagisto-app-secret-vault.
+# Mục đích: Đồng bộ secret app từ Vault ra bagisto-app-secret.
 # Phụ thuộc: SecretStore vault-backend.
 # Sync-wave/hook: Không có.
 # Owner: cuongmotnang
@@ -44,7 +44,7 @@ spec:
     - extract:
         key: bagisto/app
 ---
-# Mục đích: Đồng bộ secret infra từ Vault ra secret tạm bagisto-secrets-vault.
+# Mục đích: Đồng bộ secret infra từ Vault ra bagisto-secrets.
 # Phụ thuộc: SecretStore vault-backend.
 # Sync-wave/hook: Không có.
 # Owner: cuongmotnang
