@@ -1,0 +1,7 @@
+# Mục đích: Values tối thiểu cho External Secrets Operator trong cụm dev.
+# Phụ thuộc: Chart external-secrets 2.15.0.
+# Sync-wave/hook: Không có.
+# Owner: cuongmotnang
+# Tham chiếu: docs/architecture.md
+installCRDs: true
+replicaCount: 1
