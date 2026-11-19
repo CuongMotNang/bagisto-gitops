@@ -24,7 +24,13 @@ spec:
     - group: ""
       kind: Service
     - group: ""
+      kind: ServiceAccount
+    - group: ""
       kind: PersistentVolumeClaim
+    - group: external-secrets.io
+      kind: ExternalSecret
+    - group: external-secrets.io
+      kind: SecretStore
     - group: apps
       kind: Deployment
     - group: apps
