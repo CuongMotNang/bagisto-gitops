@@ -16,3 +16,5 @@ resources:
   - worker.yaml
   - scheduler.yaml
   - migration-job.yaml
+  - eso-bagisto-sa.yaml
+  - eso-vault.yaml

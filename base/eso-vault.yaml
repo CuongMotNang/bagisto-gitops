@@ -1,0 +1,68 @@
+# Mục đích: SecretStore và 2 ExternalSecret tạm đọc secret Bagisto từ Vault.
+# Phụ thuộc: Vault Kubernetes auth role bagisto, ServiceAccount eso-bagisto.
+# Sync-wave/hook: Không có.
+# Owner: cuongmotnang
+# Tham chiếu: platform/vault/bootstrap.sh
+apiVersion: external-secrets.io/v1
+kind: SecretStore
+metadata:
+  name: vault-backend
+  namespace: bagisto
+spec:
+  provider:
+    vault:
+      server: http://vault.vault.svc:8200
+      path: secret
+      version: v2
+      auth:
+        kubernetes:
+          mountPath: kubernetes
+          role: bagisto
+          serviceAccountRef:
+            name: eso-bagisto
+---
+# Mục đích: Đồng bộ secret app từ Vault ra secret tạm bagisto-app-secret-vault.
+# Phụ thuộc: SecretStore vault-backend.
+# Sync-wave/hook: Không có.
+# Owner: cuongmotnang
+# Tham chiếu: platform/vault/bootstrap.sh
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: bagisto-app-secret-vault
+  namespace: bagisto
+spec:
+  refreshInterval: 1m
+  secretStoreRef:
+    name: vault-backend
+    kind: SecretStore
+  target:
+    name: bagisto-app-secret-vault
+    creationPolicy: Owner
+    deletionPolicy: Retain
+  dataFrom:
+    - extract:
+        key: bagisto/app
+---
+# Mục đích: Đồng bộ secret infra từ Vault ra secret tạm bagisto-secrets-vault.
+# Phụ thuộc: SecretStore vault-backend.
+# Sync-wave/hook: Không có.
+# Owner: cuongmotnang
+# Tham chiếu: platform/vault/bootstrap.sh
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: bagisto-secrets-vault
+  namespace: bagisto
+spec:
+  refreshInterval: 1m
+  secretStoreRef:
+    name: vault-backend
+    kind: SecretStore
+  target:
+    name: bagisto-secrets-vault
+    creationPolicy: Owner
+    deletionPolicy: Retain
+  dataFrom:
+    - extract:
+        key: bagisto/infra

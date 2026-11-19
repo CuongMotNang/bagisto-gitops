@@ -1,0 +1,13 @@
+# Mục đích: ServiceAccount cho External Secrets Operator xác thực với Vault.
+# Phụ thuộc: Vault Kubernetes auth role bagisto.
+# Sync-wave/hook: Không có.
+# Owner: cuongmotnang
+# Tham chiếu: platform/vault/bootstrap.sh
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: eso-bagisto
+  namespace: bagisto
+  labels:
+    app.kubernetes.io/name: external-secrets
+    app.kubernetes.io/part-of: bagisto
