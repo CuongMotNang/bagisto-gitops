@@ -1,0 +1,39 @@
+# Mục đích: Application Argo CD cài kube-prometheus-stack 93.9.0 bằng values trong repo.
+# Phụ thuộc: AppProject observability; Helm repo prometheus-community; platform/monitoring/values.yaml.
+# Sync-wave/hook: wave 0 cho toàn stack; ServiceMonitor/PrometheusRule ở các bước sau dùng wave 1.
+# Owner: cuongmotnang
+# Tham chiếu: docs/assessment.md, bootstrap/appproject-observability.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: monitoring
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: observability
+  sources:
+    - repoURL: https://github.com/CuongMotNang/bagisto-gitops
+      targetRevision: master
+      ref: values
+    - repoURL: https://prometheus-community.github.io/helm-charts
+      chart: kube-prometheus-stack
+      targetRevision: 93.9.0
+      helm:
+        skipTests: true
+        valueFiles:
+          - $values/platform/monitoring/values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: true
+    retry:
+      limit: 0
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
