@@ -1,0 +1,72 @@
+# Mục đích: Values cho kube-prometheus-stack 93.9.0 trong namespace monitoring (Minikube 4 CPU/6 GB).
+# Phụ thuộc: chart prometheus-community/kube-prometheus-stack; StorageClass standard; namespace monitoring.
+# Sync-wave/hook: stack được sync ở wave 0; rule/service monitor ở các bước sau dùng wave 1.
+# Owner: cuongmotnang
+# Tham chiếu: bootstrap/application-monitoring.yaml, docs/assessment.md
+
+# Alertmanager chưa có receiver thật ở bước này; receiver 'null' là cấu hình mặc định của chart.
+# Bước 4 sẽ thêm receiver Slack qua Secret do ESO tạo, không hardcode webhook ở đây.
+alertmanager:
+  config:
+    global:
+      resolve_timeout: 5m
+    route:
+      group_by: ['namespace', 'alertname']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 12h
+      receiver: 'null'
+    receivers:
+      - name: 'null'
+    templates: []
+  alertmanagerSpec:
+    resources:
+      requests: { cpu: 20m, memory: 32Mi }
+      limits: { cpu: 100m, memory: 128Mi }
+
+prometheusOperator:
+  resources:
+    requests: { cpu: 50m, memory: 64Mi }
+    limits: { cpu: 200m, memory: 256Mi }
+
+prometheus:
+  prometheusSpec:
+    retention: 3d
+    retentionSize: 5GiB
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 5Gi
+    resources:
+      requests: { cpu: 100m, memory: 256Mi }
+      limits: { cpu: 500m, memory: 1Gi }
+
+grafana:
+  # Bước 4 sẽ đổi sang existingSecret: grafana-admin (ExternalSecret từ Vault).
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      labelValue: "1"
+  resources:
+    requests: { cpu: 50m, memory: 64Mi }
+    limits: { cpu: 200m, memory: 256Mi }
+
+kubeStateMetrics:
+  enabled: true
+
+kube-state-metrics:
+  resources:
+    requests: { cpu: 20m, memory: 32Mi }
+    limits: { cpu: 100m, memory: 128Mi }
+
+nodeExporter:
+  enabled: true
+
+prometheus-node-exporter:
+  resources:
+    requests: { cpu: 20m, memory: 32Mi }
+    limits: { cpu: 100m, memory: 64Mi }
